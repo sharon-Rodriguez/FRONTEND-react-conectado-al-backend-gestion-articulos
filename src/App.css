@@ -34,7 +34,7 @@ body {
 .header .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 10px;  /* espacio entre logo y texto */
 }
 
 .header .brand h1 {
@@ -65,13 +65,13 @@ body {
 .sidebar {
   position: fixed;
   top: 0;
-  left: -260px;
+  left: -260px;  /* oculta el menú al inicio */
   width: 260px;
   height: 100%;
   background: #d4a017;
   color: white;
   padding: 20px;
-  transition: 0.3s;
+  transition: 0.3s; /* animación al abrir/cerrar */
   z-index: 2000;
   display: flex;
   flex-direction: column;
@@ -79,8 +79,8 @@ body {
 }
 
 .sidebar.active {
-  box-shadow: 6px 0 25px rgba(0,0,0,0.35);
-  left: 0;
+  box-shadow: 6px 0 25px rgba(0,0,0,0.35); /* sombra al abrir */
+  left: 0;    /* despliega el menú */
 }
 
 .sidebar h3 {
@@ -96,7 +96,7 @@ body {
   list-style: none;
   padding: 0;
   margin-top: 10px;
-  flex-grow: 1;
+  flex-grow: 1;   /* ocupa el resto de la columna */
 }
 
 .sidebar ul li {
@@ -113,7 +113,7 @@ body {
 
 /* === CONTENIDO === */
 main {
-  padding: 30px 60px 0px; /* 20px para que el titulo este debajito del header */
+  padding: 30px 60px 0px; /* modificar el espacio de arriba debajo del header */
   flex: 1; 
   min-height: 85vh;
 }
@@ -132,7 +132,7 @@ main {
 /* === FEED === */
 .articles {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));  /* tarjetas responsive */
   gap: 20px;
 }
 
@@ -143,6 +143,7 @@ main {
   box-shadow: 0 2px 6px rgba(0,0,0,0.35);
   display: flex;
   flex-direction: column;
+  position: relative; /* Eso hace que el icono basurita que tiene "position: absolute" usen la card como referencia al estar dentro de ella, en lugar de usar toda la página. */
 }
 
 .preview .card {
@@ -155,7 +156,7 @@ main {
 .card img {
   width: 100%;
   height: 150px;
-  object-fit: cover;
+  object-fit: cover;  /* recorta la imagen sin deformarla */
   box-shadow: 0 2px 2px rgba(0,0,0,0.1);
 }
 
@@ -259,8 +260,9 @@ button:hover {
   text-align: center;
 }
 
+/* === Estilos para la card de vista previa ==== */
 .preview .card img {
-  height: 160px; /* ajuste a tamaño mediano */
+  height: 160px; /* tamaño más grande de tarjeta para vista previa */
   object-fit: cover;
   width: 100%;
   border-radius: 12px 12px 0 0;
@@ -331,8 +333,4 @@ footer {
 
 .delete-icon:hover {
   color: #888; /* un poco más fuerte al pasar el mouse */
-}
-
-.card {
-  position: relative;
 }

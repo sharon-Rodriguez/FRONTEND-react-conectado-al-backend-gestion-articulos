@@ -5,10 +5,12 @@ import Form from "./components/Form";
 import Preview from "./components/Preview";
 
 export default function App() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [currentView, setCurrentView] = useState("feed");
-  const [message, setMessage] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // controla si el sidebar está abierto o cerrado
+  const [currentView, setCurrentView] = useState("feed");  // controla qué vista mostrar (feed, form, preview)
+  const [message, setMessage] = useState(null);  // mensaje para avisos (ej: eliminado)
 
+
+  // lista de artículos con 2 de ejemplo
   const [articles, setArticles] = useState([
     {
       id: 1,
@@ -24,35 +26,44 @@ export default function App() {
     },
   ]);
 
-  const sidebarRef = useRef(null);
-  const menuBtnRef = useRef(null);
+   // === REFERENCIAS ===
+  const sidebarRef = useRef(null);  // referencia al sidebar (para detectar clic afuera)
+  const menuBtnRef = useRef(null); // referencia al botón de menú
 
-  const [toast, setToast] = useState(null);
-  const [formData, setFormData] = useState({ title: "", description: "", image: "" });
-  const [previewArticle, setPreviewArticle] = useState(null);
 
+  // === MÁS ESTADOS ===
+  const [toast, setToast] = useState(null);// mensaje temporal (ej: guardado exitoso)
+  const [formData, setFormData] = useState({ title: "", description: "", image: "" }); // datos del formulario
+  const [previewArticle, setPreviewArticle] = useState(null); // artículo en vista previa
+
+
+   // === MANEJAR CLICK FUERA DEL SIDEBAR ===
   useEffect(() => {
     function handleClickOutside(e) {
       if (
         sidebarOpen &&
         sidebarRef.current &&
-        !sidebarRef.current.contains(e.target) &&
+        !sidebarRef.current.contains(e.target) && // clic fuera del sidebar
         menuBtnRef.current &&
-        !menuBtnRef.current.contains(e.target)
+        !menuBtnRef.current.contains(e.target) // clic fuera del botón de menú
       ) {
-        setSidebarOpen(false);
+        setSidebarOpen(false);   // cerrar sidebar
       }
     }
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, [sidebarOpen]);
 
+// === FUNCIONES PRINCIPALES ===
+
+// Alterna el estado del sidebar (abrir/cerrar)
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
+  // Actualiza el estado del formulario en cada cambio de input
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-
+// Maneja el envío del formulario → crea un artículo en preview
   const handleSubmit = (e) => {
     e.preventDefault();
     const newArticle = { id: Date.now(), ...formData };

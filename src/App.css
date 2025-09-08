@@ -163,7 +163,8 @@ main {
 .preview h2 {
   font-weight: 100;
   font-size: 20px;
-  margin-bottom: 50px;
+  margin-bottom: 80px;
+  margin-top: 90px;
 }
 
 .preview .card .info {
@@ -216,7 +217,7 @@ main {
   display: flex;
   flex-direction: column;
   max-width: 400px;
-  margin: 20px auto;
+  margin: 90px auto;
   gap: 12px;
 }
 
@@ -235,7 +236,7 @@ main {
 
 button {
   background: #d29d2b;
-  margin-top: 40px;
+  margin-top: 20px;
   margin-left: 25px;
   color: white;
   padding: 12px 40px;

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { getArticulos } from "../services/articulosService"; // ajusta la ruta según dónde tengas el service
-import CardArticulo from "./CardArticulo"; // ajusta la ruta según dónde esté tu componente de tarjeta
+import { getArticulos } from "./services/ArticulosServices"; // ajusta la ruta según dónde tengas el service
+import Card from "/Card"; // ajusta la ruta según dónde esté tu componente de tarjeta
 
 export default function ListarArticulos() {
 const [articulos, setArticulos] = useState([]);
@@ -17,10 +17,10 @@ useEffect(() => {
 }, []);
 
     return (
-    <div className="articulos-lista" style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+    <div className="articulos-lista">
         {articulos.length > 0 ? (
         articulos.map((articulo) => (
-            <CardArticulo key={articulo.id} articulo={articulo} />
+            <Card key={articulo.id} articulo={articulo} />
         ))
         ) : (
         <p>No hay artículos disponibles</p>

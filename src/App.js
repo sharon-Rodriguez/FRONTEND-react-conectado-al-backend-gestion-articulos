@@ -5,65 +5,62 @@ import Form from "./components/Form";
 import Preview from "./components/Preview";
 
 export default function App() {
-  const [sidebarOpen, setSidebarOpen] = useState(false); // controla si el sidebar está abierto o cerrado
-  const [currentView, setCurrentView] = useState("feed");  // controla qué vista mostrar (feed, form, preview)
-  const [message, setMessage] = useState(null);  // mensaje para avisos (ej: eliminado)
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [currentView, setCurrentView] = useState("feed");
+  const [message, setMessage] = useState(null);
 
-
-  // lista de artículos con 2 de ejemplo
-  const [articles, setArticles] = useState([
+  // === DEMO (siempre locales, no backend) ===
+  const [articlesDemo, setArticlesDemo] = useState([
     {
-      id: 1,
+      id: "demo-1",
       title: "Bicicleta usada",
       description: "En buen estado, lista para rodar 🚴",
       image: "https://picsum.photos/300/200?random=1",
     },
     {
-      id: 2,
+      id: "demo-2",
       title: "Chaqueta de cuero",
       description: "Casi nueva, talla M 🧥",
       image: "https://picsum.photos/300/200?random=2",
     },
   ]);
 
-   // === REFERENCIAS ===
-  const sidebarRef = useRef(null);  // referencia al sidebar (para detectar clic afuera)
-  const menuBtnRef = useRef(null); // referencia al botón de menú
+  // === BACKEND (aquí luego conectas con tu API) ===
+  const [articlesBackend, setArticlesBackend] = useState([]);
 
+  // === REFERENCIAS ===
+  const sidebarRef = useRef(null);
+  const menuBtnRef = useRef(null);
 
   // === MÁS ESTADOS ===
-  const [toast, setToast] = useState(null);// mensaje temporal (ej: guardado exitoso)
-  const [formData, setFormData] = useState({ title: "", description: "", image: "" }); // datos del formulario
-  const [previewArticle, setPreviewArticle] = useState(null); // artículo en vista previa
+  const [toast, setToast] = useState(null);
+  const [formData, setFormData] = useState({ title: "", description: "", image: "" });
+  const [previewArticle, setPreviewArticle] = useState(null);
 
-
-   // === MANEJAR CLICK FUERA DEL SIDEBAR ===
+  // === CLICK FUERA DEL SIDEBAR ===
   useEffect(() => {
     function handleClickOutside(e) {
       if (
         sidebarOpen &&
         sidebarRef.current &&
-        !sidebarRef.current.contains(e.target) && // clic fuera del sidebar
+        !sidebarRef.current.contains(e.target) &&
         menuBtnRef.current &&
-        !menuBtnRef.current.contains(e.target) // clic fuera del botón de menú
+        !menuBtnRef.current.contains(e.target)
       ) {
-        setSidebarOpen(false);   // cerrar sidebar
+        setSidebarOpen(false);
       }
     }
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, [sidebarOpen]);
 
-// === FUNCIONES PRINCIPALES ===
-
-// Alterna el estado del sidebar (abrir/cerrar)
+  // === FUNCIONES ===
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
-  // Actualiza el estado del formulario en cada cambio de input
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-// Maneja el envío del formulario → crea un artículo en preview
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const newArticle = { id: Date.now(), ...formData };
@@ -74,7 +71,7 @@ export default function App() {
   };
 
   const handleConfirm = () => {
-    setArticles([previewArticle, ...articles]);
+    setArticlesBackend([previewArticle, ...articlesBackend]);
     setPreviewArticle(null);
     setFormData({ title: "", description: "", image: "" });
     setCurrentView("feed");
@@ -82,19 +79,27 @@ export default function App() {
 
   const handleDeletePreview = () => {
     if (previewArticle) {
-      setArticles(prev => prev.filter(a => a.id !== previewArticle.id));
+      setArticlesBackend(prev => prev.filter(a => a.id !== previewArticle.id));
     }
     setPreviewArticle(null);
     setCurrentView("form");
   };
 
+  // Manejo de borrado → si es demo, borra de demo; si es backend, borra de backend
   const handleDeleteDirecto = (id) => {
     if (window.confirm("¿Seguro quieres borrar este artículo?")) {
-      setArticles(prev => prev.filter(a => a.id !== id));
+      if (String(id).startsWith("demo-")) {
+        setArticlesDemo(prev => prev.filter(a => a.id !== id));
+      } else {
+        setArticlesBackend(prev => prev.filter(a => a.id !== id));
+      }
       setMessage("El elemento ha sido borrado");
       setTimeout(() => setMessage(null), 3000);
     }
   };
+
+  // Unimos demo + backend para mostrar
+  const allArticles = [...articlesDemo, ...articlesBackend];
 
   return (
     <div>
@@ -125,9 +130,13 @@ export default function App() {
           <>
             <h2 className="titulo">Artículos disponibles</h2>
             <div className="articles">
-              {articles.map((art) => (
-                <Card key={art.id} article={art} onDelete={handleDeleteDirecto} />
-              ))}
+              {allArticles.length > 0 ? (
+                allArticles.map((art) => (
+                  <Card key={art.id} article={art} onDelete={handleDeleteDirecto} />
+                ))
+              ) : (
+                <p>No hay artículos disponibles</p>
+              )}
             </div>
           </>
         )}
@@ -147,9 +156,8 @@ export default function App() {
 
       {/* TOAST */}
       {toast && <div className="toast">{toast}</div>}
-
       {message && <div className="alert success">{message}</div>}
-      
+
       <footer>© 2025 Stanew - Exchange · Sale · Donation</footer>
     </div>
   );

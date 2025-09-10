@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { getArticulos } from "./services/ArticulosServices"; // ajusta la ruta según dónde tengas el service
-import Card from "/Card"; // ajusta la ruta según dónde esté tu componente de tarjeta
+import { getArticulos } from "../Services/ArticulosServices"; // ajusta la ruta según dónde tengas el service
+import Card from "./Card"; // ajusta la ruta según dónde esté tu componente de tarjeta
 
 export default function ListarArticulos() {
 const [articulos, setArticulos] = useState([]);

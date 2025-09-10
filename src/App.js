@@ -3,13 +3,18 @@ import "./App.css";
 import Card from "./components/Card";
 import Form from "./components/Form";
 import Preview from "./components/Preview";
+import {
+  getArticulos,
+  createArticulo,
+  deleteArticulo,
+} from "./Services/ArticulosServices";
 
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentView, setCurrentView] = useState("feed");
   const [message, setMessage] = useState(null);
 
-  // === DEMO (siempre locales, no backend) ===
+  // === DEMO (solo local, no backend) ===
   const [articlesDemo, setArticlesDemo] = useState([
     {
       id: "demo-1",
@@ -25,7 +30,7 @@ export default function App() {
     },
   ]);
 
-  // === BACKEND (aquí luego conectas con tu API) ===
+  // === BACKEND ===
   const [articlesBackend, setArticlesBackend] = useState([]);
 
   // === REFERENCIAS ===
@@ -54,6 +59,13 @@ export default function App() {
     return () => document.removeEventListener("click", handleClickOutside);
   }, [sidebarOpen]);
 
+  // === CARGAR BACKEND ===
+  useEffect(() => {
+    getArticulos()
+      .then((data) => setArticlesBackend(data))
+      .catch((err) => console.error("Error cargando artículos:", err));
+  }, []);
+
   // === FUNCIONES ===
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
@@ -70,35 +82,44 @@ export default function App() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  const handleConfirm = () => {
-    setArticlesBackend([previewArticle, ...articlesBackend]);
-    setPreviewArticle(null);
-    setFormData({ title: "", description: "", image: "" });
-    setCurrentView("feed");
+  const handleConfirm = async () => {
+    try {
+      // Guardar en backend
+      const created = await createArticulo(previewArticle);
+      setArticlesBackend([created, ...articlesBackend]);
+      setPreviewArticle(null);
+      setFormData({ title: "", description: "", image: "" });
+      setCurrentView("feed");
+    } catch (error) {
+      console.error("Error creando artículo:", error);
+    }
   };
 
   const handleDeletePreview = () => {
-    if (previewArticle) {
-      setArticlesBackend(prev => prev.filter(a => a.id !== previewArticle.id));
-    }
     setPreviewArticle(null);
     setCurrentView("form");
   };
 
-  // Manejo de borrado → si es demo, borra de demo; si es backend, borra de backend
-  const handleDeleteDirecto = (id) => {
+  const handleDeleteDirecto = async (id) => {
     if (window.confirm("¿Seguro quieres borrar este artículo?")) {
       if (String(id).startsWith("demo-")) {
-        setArticlesDemo(prev => prev.filter(a => a.id !== id));
+        // Solo borra localmente
+        setArticlesDemo((prev) => prev.filter((a) => a.id !== id));
       } else {
-        setArticlesBackend(prev => prev.filter(a => a.id !== id));
+        // Borra en backend
+        try {
+          await deleteArticulo(id);
+          setArticlesBackend((prev) => prev.filter((a) => a.id !== id));
+        } catch (error) {
+          console.error("Error eliminando artículo:", error);
+        }
       }
       setMessage("El elemento ha sido borrado");
       setTimeout(() => setMessage(null), 3000);
     }
   };
 
-  // Unimos demo + backend para mostrar
+  // Unimos demo + backend
   const allArticles = [...articlesDemo, ...articlesBackend];
 
   return (

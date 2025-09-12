@@ -4,14 +4,14 @@ export default function Form({ formData, onChange, onSubmit }) {
         <h2>Publicar artículo</h2>
         <input
         type="text"
-        name="title"
-        placeholder="Título"
-        value={formData.title}
+        name="nombre"
+        placeholder="nombre del articulo"
+        value={formData.nombre}
         onChange={onChange}
         required
     />
     <textarea
-        name="description"
+        name="descripcion"
         placeholder="Descripción"
         value={formData.description}
         onChange={onChange}
@@ -19,9 +19,9 @@ export default function Form({ formData, onChange, onSubmit }) {
     />
     <input
         type="text"
-        name="image"
+        name="imagenUrl"
         placeholder="URL de la imagen"
-        value={formData.image}
+        value={formData.imagenUrl}
         onChange={onChange}
         required
     />

@@ -159,6 +159,11 @@ const handleConfirm = async () => {
       console.log("Editando artículo con id:", idArticulos);
       updatedOrCreated = await updateArticulo(idArticulos, articuloConUsuario);
 
+      // Normalizar fecha para que no incluya hora
+      if (updatedOrCreated.fechaPublicacion) {
+        updatedOrCreated.fechaPublicacion = updatedOrCreated.fechaPublicacion.split("T")[0];
+  }
+
       // Reemplaza el artículo editado en la lista
       setArticlesBackend(
         articlesBackend.map((art) =>

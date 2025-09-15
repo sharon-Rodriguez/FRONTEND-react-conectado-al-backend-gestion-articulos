@@ -1,4 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
+import Login from "./components/auth/login";
+import Register from "./components/auth/Register";
+import ForgotPassword from "./components/auth/Register";
 import "./App.css";
 import Card from "./components/Card";
 import Form from "./components/Form";
@@ -11,7 +14,23 @@ import {
 import ArticleDetail from "./components/DetalleArticulo"; 
 import { updateArticulo } from "./Services/ArticulosServices";
 
+
 export default function App() {
+
+  // Estado para saber si está logueado o no
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const [currentScreen, setCurrentScreen] = useState("login");
+  const [token, setToken] = useState(null);
+
+  // 👇 Control de navegación
+  const goTo = (screen) => setCurrentScreen(screen);
+
+  const handleLoginSuccess = (userToken) => {
+    setToken(userToken);
+    setCurrentScreen("feed");
+  };  
+
   // Estado para controlar si el sidebar (menú lateral) está abierto o cerrado
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -82,6 +101,11 @@ export default function App() {
       .catch((err) => console.error("Error cargando artículos:", err));
   }, []);
 
+  // Aquí va el return condicional
+  if (!isLoggedIn) {
+    return <Login onLoginSuccess={() => setIsLoggedIn(true)} />; 
+  }
+
 
   // === FUNCIONES ===
 
@@ -122,22 +146,18 @@ const handleConfirm = async () => {
 
   // Si el artículo es DEMO (ejemplo local), solo actualiza el estado local
   if (isDemo(previewArticle)) {
-    setArticlesDemo(prev =>
-      prev.map(a => (a.id === previewArticle.id ? previewArticle : a))
-    );
+      setArticlesDemo(prev =>
+        prev.map(a => (a.id === previewArticle.id ? previewArticle : a))
+      );
+      setPreviewArticle(null);
+      setFormData({ nombre: "", descripcion: "", imagenUrl: "" });
+      setToast("Artículo demo actualizado localmente 🔄");
+      setTimeout(() => setToast(null), 3000);
+      setCurrentView("feed");
+      return; // se corta para que no pase al backend
+    }
     
-    setPreviewArticle(null);
-    setFormData({ nombre: "", descripcion: "", imagenUrl: "" });
-
-    setToast("Artículo demo actualizado localmente 🔄");
-    setTimeout(() => setToast(null), 3000);
-
-    setCurrentView("feed");
-
-    return; //  aquí se corta para NO mandar al backend
-  }
-
-  try {
+    try {
     // Separamos los ids para evitar conflictos con el backend
     const { id, idArticulos, ...articleWithoutId } = previewArticle;
 
@@ -276,100 +296,117 @@ const allArticles = [...articlesDemo, ...articlesBackend];
 
   return (
   <div>
-    {/* HEADER y SIDEBAR solo aparecen si NO estamos en la vista de detalle */}
-    {currentView !== "detail" && (
-      <>
-        {/* HEADER con botón de menú y marca/logo */}
-        <div className="header">
-          <div ref={menuBtnRef} className="menu-btn" onClick={toggleSidebar}>☰</div>
-          <div className="brand">
-            <img src="/logo.png" alt="logo" />
-            <h1>Stanew</h1>
-          </div>
-        </div>
-
-        {/* SIDEBAR lateral con opciones de navegación */}
-        <div ref={sidebarRef} className={`sidebar ${sidebarOpen ? "active" : ""}`}>
-          <h3>Menú</h3>
-          <ul>
-            <li onClick={() => { setSidebarOpen(false); setCurrentView("feed"); }}>Inicio</li>
-            <li>Solicitudes</li>
-            <li>Perfil</li>
-            <li onClick={() => setCurrentView("form")}>Publicar artículo</li>
-            <li>Cerrar sesión</li>
-          </ul>
-        </div>
-      </>
+    {/*para mostrar Pantalla de LOGIN */}
+    {currentScreen === "login" && (
+      <Login goTo={goTo} onLoginSuccess={handleLoginSuccess} />
     )}
 
-    {/* CONTENIDO PRINCIPAL */}
-    <main style={{ marginTop: "8px" }}>
-      {/* Vista principal: lista de artículos */}
-      {currentView === "feed" && (
-        <>
-          <h2 className="titulo">Artículos disponibles</h2>
-          <div className="articles">
-            {allArticles.length > 0 ? (
-              allArticles.map((art) => (
-                <Card 
-                  key={art.idArticulos ?? art.id} // clave única, soporta demo o backend
-                  article={art}
-                  onDelete={handleDeleteDirecto} // acción de borrar
-                  onOpen={() => openDetail(art)} // abrir detalle
-                />
-              ))
-            ) : (
-              <p>No hay artículos disponibles</p>
-            )}
-          </div>
+    {/* {currentScreen === "forgot" && <ForgotPassword goTo={goTo} />} */}
+
+    {/* Pantalla de REGISTRO */}
+    {currentScreen === "register" && <Register goTo={goTo} />}
+
+    {/* Pantalla de FEED (todo  va aquí) */}
+    {currentScreen === "feed" && (
+      <>
+        {/* HEADER y SIDEBAR solo aparecen si NO estamos en la vista de detalle */}
+        {currentView !== "detail" && (
+          <>
+            {/* HEADER con botón de menú y marca/logo */}
+            <div className="header">
+              <div ref={menuBtnRef} className="menu-btn" onClick={toggleSidebar}>☰</div>
+              <div className="brand">
+                <img src="/logo.png" alt="logo" />
+                <h1>Stanew</h1>
+              </div>
+            </div>
+
+            {/* SIDEBAR lateral con opciones de navegación */}
+            <div ref={sidebarRef} className={`sidebar ${sidebarOpen ? "active" : ""}`}>
+              <h3>Menú</h3>
+              <ul>
+                <li onClick={() => { setSidebarOpen(false); setCurrentView("feed"); }}>Inicio</li>
+                <li>Solicitudes</li>
+                <li>Perfil</li>
+                <li onClick={() => setCurrentView("form")}>Publicar artículo</li>
+                <li onClick={() => setCurrentScreen("login")}>
+                      Cerrar sesión
+                    </li>
+              </ul>
+            </div>
+          </>
+        )}
+
+        {/* CONTENIDO PRINCIPAL */}
+        <main style={{ marginTop: "8px" }}>
+          {/* Vista principal: lista de artículos */}
+          {currentView === "feed" && (
+            <>
+              <h2 className="titulo">Artículos disponibles</h2>
+              <div className="articles">
+                {allArticles.length > 0 ? (
+                  allArticles.map((art) => (
+                    <Card 
+                      key={art.idArticulos ?? art.id} // clave única, soporta demo o backend
+                      article={art}
+                      onDelete={handleDeleteDirecto} // acción de borrar
+                      onOpen={() => openDetail(art)} // abrir detalle
+                    />
+                  ))
+                ) : (
+                  <p>No hay artículos disponibles</p>
+                )}
+              </div>
+            </>
+          )}
+
+          {/* Vista del formulario para crear o editar */}
+          {currentView === "form" && (
+            <Form formData={formData} onChange={handleChange} onSubmit={handleSubmit} />
+          )}
+
+          {/* Vista previa antes de confirmar publicación */}
+          {currentView === "preview" && previewArticle && (
+            <Preview
+              article={previewArticle}
+              onConfirm={handleConfirm} // confirmar publicación
+              onDelete={handleDeletePreview} // descartar borrador
+            />
+          )}
+
+          {/* Vista detalle de un artículo */}
+          {currentView === "detail" && selectedArticle && (
+            <ArticleDetail
+              article={selectedArticle}
+              onBack={() => { setSelectedArticle(null); setCurrentView("feed"); }} // volver al feed
+              onEdit={(art) => {
+                // Prepara el formulario con los datos del artículo seleccionado
+                setFormData({
+                  nombre: art.nombre,
+                  descripcion: art.descripcion,
+                  imagenUrl: art.imagenUrl,
+                  precio: art.precio,
+                  tipoAccion: art.tipoAccion,
+                });
+
+                // Guardamos el artículo como preview para mantener id
+                setPreviewArticle( art );
+
+                setCurrentView("form"); // Abrimos el formulario
+              }}
+              onAction={(art) => handleAction(art)} // realizar acción (comprar, recibir, etc.)
+            />
+          )}
+        </main>
+
+        {/* Notificaciones y alertas */}
+        {toast && <div className="toast">{toast}</div>}
+        {message && <div className="alert success">{message}</div>}
+
+        {/* Footer fijo al final */}
+        <footer>© 2025 Stanew - Exchange · Sale · Donation</footer>
         </>
-      )}
-
-      {/* Vista del formulario para crear o editar */}
-      {currentView === "form" && (
-        <Form formData={formData} onChange={handleChange} onSubmit={handleSubmit} />
-      )}
-
-      {/* Vista previa antes de confirmar publicación */}
-      {currentView === "preview" && previewArticle && (
-        <Preview
-          article={previewArticle}
-          onConfirm={handleConfirm} // confirmar publicación
-          onDelete={handleDeletePreview} // descartar borrador
-        />
-      )}
-
-      {/* Vista detalle de un artículo */}
-      {currentView === "detail" && selectedArticle && (
-        <ArticleDetail
-          article={selectedArticle}
-          onBack={() => { setSelectedArticle(null); setCurrentView("feed"); }} // volver al feed
-          onEdit={(art) => {
-            // Prepara el formulario con los datos del artículo seleccionado
-            setFormData({
-              nombre: art.nombre,
-              descripcion: art.descripcion,
-              imagenUrl: art.imagenUrl,
-              precio: art.precio,
-              tipoAccion: art.tipoAccion,
-            });
-
-            // Guardamos el artículo como preview para mantener id
-            setPreviewArticle( art );
-
-            setCurrentView("form"); // Abrimos el formulario
-          }}
-          onAction={(art) => handleAction(art)} // realizar acción (comprar, recibir, etc.)
-        />
-      )}
-    </main>
-
-    {/* Notificaciones y alertas */}
-    {toast && <div className="toast">{toast}</div>}
-    {message && <div className="alert success">{message}</div>}
-
-    {/* Footer fijo al final */}
-    <footer>© 2025 Stanew - Exchange · Sale · Donation</footer>
+    )}  
   </div>
 );
 }
